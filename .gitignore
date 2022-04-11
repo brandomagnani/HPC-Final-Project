@@ -9,6 +9,9 @@ a.out
 *.o
 *.so
 
+# SLURM scripts #
+cpp.sbatch
+
 # Packages #
 ############
 # it's better to unpack these files and commit the raw source
