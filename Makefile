@@ -6,8 +6,11 @@ TARGETS = $(basename $(wildcard *.cpp))
 
 all : $(TARGETS)
 
-%:%.cpp *.h
-	$(CXX) $(CXXFLAGS) $< $(LIBS) -o $@
+main:main.cpp
+	$(CXX) $(CXXFLAGS) main.cpp -o main.out
+
+# %:%.cpp *.h
+# 	$(CXX) $(CXXFLAGS) $< $(LIBS) -o $@
 
 clean:
 	

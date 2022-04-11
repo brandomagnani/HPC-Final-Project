@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <math.h>
-#include <omp.h>
+// #include <omp.h>
 #include <stdlib.h>
 
-#include "gradient_descent.h"
+#include "gradient_descent.cpp"
 
 using namespace std;
 
