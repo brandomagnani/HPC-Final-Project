@@ -3,19 +3,23 @@
 #include <omp.h>
 #include <stdlib.h>
 
+#include "gradient_descent.h"
+
 using namespace std;
 
 
 int main(int argc, char** argv)
 {
-    long n = strtol(argv[1], nullptr, 0);    // Number of rows in A
-    long d = strtol(argv[1], nullptr, 0);    // Number of cols in A
+    // Initialize parameters
+    long n = 1000;     // Number of rows in A
+    long d = 10;       // Number of cols in A
+    double eta = 0.1;  // Learning rate
+    long n_iter = 100; // Number of iterations of gradient descent
 
     // Initialize matrices
     double* A = (double*) malloc(n * d * sizeof(double));
     double* b = (double*) malloc(n * sizeof(double));
     double* x = (double*) malloc(d * sizeof(double));
-
     for (long i=0; i<n*d; i++)
         A[i] = drand48();
     for (long i=0; i<n; i++)
@@ -24,6 +28,7 @@ int main(int argc, char** argv)
         x[i] = drand48();
 
     // Perform Gradient descent
-
+    
+    
     return 0;
 }
