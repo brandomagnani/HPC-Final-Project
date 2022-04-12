@@ -1,7 +1,5 @@
 # Compiled source #
 ###################
-a.out
-*.out
 *.com
 *.class
 *.dll
@@ -9,8 +7,11 @@ a.out
 *.o
 *.so
 
-# SLURM scripts #
+# CPP Stuff #
 cpp.sbatch
+main
+a.out
+*.out
 
 # Packages #
 ############
