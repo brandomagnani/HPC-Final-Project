@@ -16,8 +16,8 @@ int main(int argc, char** argv)
 
     // Initialize parameters
     long n = 10;      // Number of rows in A
-    long d = 5;        // Number of cols in A
-    double eta = 0.001;  // Learning rate
+    long d = 3;        // Number of cols in A
+    double eta = 0.1;  // Learning rate
     long n_iter = 1000;  // Number of iterations of gradient descent
 
     // Initialize matrices
@@ -26,26 +26,25 @@ int main(int argc, char** argv)
     double* x = (double*) malloc(d * sizeof(double));
 
     for (long i=0; i<n*d; i++)
-        A[i] = double(i); // A[i] = drand48();
+        A[i] = drand48();
     for (long i=0; i<n; i++)
-        b[i] = 1.0;
+        b[i] = drand48();
     for (long i=0; i<d; i++)
         x[i] = drand48();
 
     double* At = (double*) malloc(d * n * sizeof(double));
     transpose(n, d, A, At);     // Set At
 
-    printf("Matrix A:\n");
-    printMatrix(n, d, A);
-    printf("vector x:\n");
-    printMatrix(1, d, x);
-    printf("vector b:\n");
-    printMatrix(1, n, b);
+    // printf("Matrix A:\n");
+    // printMatrix(n, d, A);
+    // printf("vector x:\n");
+    // printMatrix(1, d, x);
+    // printf("vector b:\n");
+    // printMatrix(1, n, b);
 
     double* r = (double*) malloc(n * sizeof(double));
-    residual(n, d, A, x, b, r); // Set r
-    printf("Residual r = Ax - b:\n");
-    printMatrix(1, n, r);
+    // residual(n, d, A, x, b, r); // Set r
+    
 
     double* grad = (double*) malloc(d * sizeof(double));
     for (long i=0; i<d; i++) {
@@ -54,7 +53,11 @@ int main(int argc, char** argv)
     
     // Perform Gradient descent
     // gradientDescent(n, d, A, At, x, b, r, grad, eta, n_iter);
-    // gradientIteration(n, d, A, At, x, b, r, grad, eta);
+    printf("ITERATION 1:\n");
+    gradientIteration(n, d, A, At, x, b, r, grad, eta);
+
+    printf("\nITERATION 2:\n");
+    gradientIteration(n, d, A, At, x, b, r, grad, eta);
 
     // Free memory
     free(A);

@@ -30,6 +30,9 @@ void residual(long n, long d, double* A, double* x, double* b, double* r)
     double* Ax = (double*) malloc(n * sizeof(double));
     MMult0(n, 1, d, A, x, Ax);
 
+    printf("Matrix Ax:\n");
+    printMatrix(1, n, Ax);
+
     for (long i=0; i<n; i++) {
         r[i] = Ax[i] - b[i];
     }
@@ -53,14 +56,32 @@ void gradientIteration(long n, long d, double* A, double* At,
 {
     // Performs a single step of gradient descent
     // Gradient is given by A^T(Ax - b)
-    residual(n, d, A, x, b, r);   // Update residual r = Ax - b
+
+    printf("Old x:\n");
+    printMatrix(1, d, x);
+
+    // Update residual r = Ax - b
+    residual(n, d, A, x, b, r);
+    printf("Residual r = Ax - b:\n");
+    printMatrix(1, n, r);
+    printf("Residual norm: %f\n", norm(r, n));
+
+    // Update gradient
+    for (long i=0; i<d; i++) {
+        grad[i] = 0.0;
+    }
     MMult0(d, 1, n, At, r, grad); // Update grad = A^T(Ax-b) (multiply by 1/n later)
+    printf("Unnormalized gradient grad(x) = At(Ax - b):\n");
+    printMatrix(1, d, grad);
     
+
     // Perform iteration and reset gradient
     for (long i=0; i<d; i++) {
-        x[i] = x[i] - eta / double(n) * grad[i];
-        grad[i] = 0;
+        x[i] = x[i] - eta / (double) n * grad[i];
     }
+
+    printf("New x:\n");
+    printMatrix(1, d, x);
 }
 
 void gradientDescent(long n, long d, double* A, double* At, 
