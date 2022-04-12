@@ -10,6 +10,17 @@
 
 using namespace std;
 
+void transpose(long m, long n, double* A, double* At)
+{
+    // Takes the transpose of an mxn matrix A. Stores the result in At.
+    for (long i=0; i<m; i++) {
+        for (long j=0; j<n; j++) {
+            // At[j, i] = A[i, j]
+            At[j + n*i] = A[i + m*j];
+        }
+    }
+}
+
 void residual(long n, long d, double* A, double* x, double* b, double* r)
 {
     // Computes r = Ax - b.
@@ -33,31 +44,30 @@ double norm(double* r, long n)
     return sqrt(mag);
 }
 
-// void gradient(long n, long d, double* A, double* x, double* b, 
-//     double* r, double* grad)
-// {
-//     // Computes the gradient A^T(Ax - b) of g(x) = ||Ax - b||^2/2
-// }
-
-void gradientIteration(long n, long d, double* A, double* x, double* b,
-    double eta)
+void gradientIteration(long n, long d, double* A, double* At, 
+                       double* x, double* b, double* r, double* grad,
+                       double eta)
 {
     // Performs a single step of gradient descent
-    double* r = (double*) malloc(n * sizeof(double));
-    residual(n, d, A, x, b, r);
+    // Gradient is given by A^T(Ax - b)
+    residual(n, d, A, x, b, r);   // Update residual r
+    MMult0(d, 1, n, At, r, grad); // Update grad
     
+    // Perform iteration
     for (long i=0; i<d; i++) {
         x[i] = x[i] - eta * grad[i];
     }
 }
 
 void gradientDescent(long n, long d, double* A, double* At, 
-                     double* x, double* b, double*r,
+                     double* x, double* b, double* r, double* grad,
                      double eta, long n_iter)
 {
+    printf("Iteration | Residual\n");
     for (long i=0; i<n_iter; i++) 
     {
-        gradientIteration(n, d, A, x, b, eta);
+        printf("%3d     | %f\n", i, norm(r, n));
+        gradientIteration(n, d, A, At, x, b, r, grad, eta);
     }
 }
 
