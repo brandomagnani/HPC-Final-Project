@@ -7,12 +7,14 @@
 #include <stdlib.h>
 
 #include "MMult.h"
+#include "debug.h"
 
 using namespace std;
 
 void transpose(long m, long n, double* A, double* At)
 {
     // Takes the transpose of an mxn matrix A. Stores the result in At.
+    // Tested 4-12-22 10:00am
     for (long i=0; i<m; i++) {
         for (long j=0; j<n; j++) {
             // At[j, i] = A[i, j]
@@ -24,6 +26,7 @@ void transpose(long m, long n, double* A, double* At)
 void residual(long n, long d, double* A, double* x, double* b, double* r)
 {
     // Computes r = Ax - b.
+    // Tested 4-12-22 10:15am
     double* Ax = (double*) malloc(n * sizeof(double));
     MMult0(n, 1, d, A, x, Ax);
 
@@ -51,11 +54,11 @@ void gradientIteration(long n, long d, double* A, double* At,
     // Performs a single step of gradient descent
     // Gradient is given by A^T(Ax - b)
     residual(n, d, A, x, b, r);   // Update residual r = Ax - b
-    MMult0(d, 1, n, At, r, grad); // Update grad
+    MMult0(d, 1, n, At, r, grad); // Update grad = A^T(Ax-b) (multiply by 1/n later)
     
     // Perform iteration and reset gradient
     for (long i=0; i<d; i++) {
-        x[i] = x[i] - eta / n * grad[i];
+        x[i] = x[i] - eta / double(n) * grad[i];
         grad[i] = 0;
     }
 }

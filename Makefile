@@ -9,4 +9,4 @@ main: main.cpp
 # 	$(CXX) $(CXXFLAGS) $< $(LIBS) -o $@
 
 clean:
-	rm main slurm*.out
+	rm main
