@@ -35,21 +35,10 @@ int main(int argc, char** argv)
     double* At = (double*) malloc(d * n * sizeof(double));
     transpose(n, d, A, At);     // Set At
 
-    // printf("Matrix A:\n");
-    // printMatrix(n, d, A);
-    // printf("vector x:\n");
-    // printMatrix(1, d, x);
-    // printf("vector b:\n");
-    // printMatrix(1, n, b);
-
     double* r = (double*) malloc(n * sizeof(double));
     residual(n, d, A, x, b, r); // Set r
     
-
-    double* grad = (double*) malloc(d * sizeof(double));
-    for (long i=0; i<d; i++) {
-        grad[i] = 0.0;
-    }
+    double* grad = (double*) calloc(d, sizeof(double));
     
     // Perform Gradient descent
     gradientDescent(n, d, A, At, x, b, r, grad, eta, n_iter);
