@@ -50,12 +50,13 @@ void gradientIteration(long n, long d, double* A, double* At,
 {
     // Performs a single step of gradient descent
     // Gradient is given by A^T(Ax - b)
-    residual(n, d, A, x, b, r);   // Update residual r
+    residual(n, d, A, x, b, r);   // Update residual r = Ax - b
     MMult0(d, 1, n, At, r, grad); // Update grad
     
-    // Perform iteration
+    // Perform iteration and reset gradient
     for (long i=0; i<d; i++) {
-        x[i] = x[i] - eta * grad[i];
+        x[i] = x[i] - eta / n * grad[i];
+        grad[i] = 0;
     }
 }
 
@@ -66,7 +67,7 @@ void gradientDescent(long n, long d, double* A, double* At,
     printf("Iteration | Residual\n");
     for (long i=0; i<n_iter; i++) 
     {
-        printf("%3d     | %f\n", i, norm(r, n));
+        printf("%3d       | %f\n", i, norm(r, n));
         gradientIteration(n, d, A, At, x, b, r, grad, eta);
     }
 }

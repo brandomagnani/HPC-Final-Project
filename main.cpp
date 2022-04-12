@@ -11,10 +11,10 @@ using namespace std;
 int main(int argc, char** argv)
 {
     // Initialize parameters
-    long n = 1000;      // Number of rows in A
-    long d = 10;        // Number of cols in A
-    double eta = 0.01;  // Learning rate
-    long n_iter = 100;  // Number of iterations of gradient descent
+    long n = 10;      // Number of rows in A
+    long d = 5;        // Number of cols in A
+    double eta = 0.001;  // Learning rate
+    long n_iter = 1000;  // Number of iterations of gradient descent
 
     // Initialize matrices
     double* A = (double*) malloc(n * d * sizeof(double));
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     double* x = (double*) malloc(d * sizeof(double));
 
     for (long i=0; i<n*d; i++)
-        A[i] = drand48();
+        A[i] = 1.0; // A[i] = drand48();
     for (long i=0; i<n; i++)
         b[i] = 1.0;
     for (long i=0; i<d; i++)
@@ -35,6 +35,9 @@ int main(int argc, char** argv)
     residual(n, d, A, x, b, r); // Set r
 
     double* grad = (double*) malloc(d * sizeof(double));
+    for (long i=0; i<d; i++) {
+        grad[i] = 0.0;
+    }
     
     // Perform Gradient descent
     gradientDescent(n, d, A, At, x, b, r, grad, eta, n_iter);
