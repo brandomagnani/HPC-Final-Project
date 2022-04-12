@@ -15,8 +15,8 @@ int main(int argc, char** argv)
     srand48(0);
 
     // Initialize parameters
-    long n = 10;      // Number of rows in A
-    long d = 3;        // Number of cols in A
+    long n = 1000;      // Number of rows in A
+    long d = 10;        // Number of cols in A
     double eta = 0.1;  // Learning rate
     long n_iter = 1000;  // Number of iterations of gradient descent
 
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     // printMatrix(1, n, b);
 
     double* r = (double*) malloc(n * sizeof(double));
-    // residual(n, d, A, x, b, r); // Set r
+    residual(n, d, A, x, b, r); // Set r
     
 
     double* grad = (double*) malloc(d * sizeof(double));
@@ -52,12 +52,7 @@ int main(int argc, char** argv)
     }
     
     // Perform Gradient descent
-    // gradientDescent(n, d, A, At, x, b, r, grad, eta, n_iter);
-    printf("ITERATION 1:\n");
-    gradientIteration(n, d, A, At, x, b, r, grad, eta);
-
-    printf("\nITERATION 2:\n");
-    gradientIteration(n, d, A, At, x, b, r, grad, eta);
+    gradientDescent(n, d, A, At, x, b, r, grad, eta, n_iter);
 
     // Free memory
     free(A);
