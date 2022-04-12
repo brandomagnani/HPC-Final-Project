@@ -1,13 +1,17 @@
 # Compiled source #
 ###################
-a.out
-*.out
 *.com
 *.class
 *.dll
 *.exe
 *.o
 *.so
+
+# CPP Stuff #
+cpp.sbatch
+main
+a.out
+*.out
 
 # Packages #
 ############
