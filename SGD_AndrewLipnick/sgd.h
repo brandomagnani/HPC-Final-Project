@@ -44,18 +44,15 @@ void gradFi(long n, long d, long i, double *A, double *x, double *b, double *gra
    
    //double* ai = (double*) calloc(d, sizeof(double));  // (d x 1) vector, i-th row of A
    double sum  = 0.;
-   double bi   = b[i];    // i-th element of b
    
-
    for (long j=0; j<d; j++) {    // compute  a_i * x
       sum += A[i*d+j] * x[j];
    }
-   sum = sum - bi;   // compute  a_i * x - b_i
    
-   for (long j=0; j<d; j++) {   // compute gradient F_i: (a_i * x - b_i) a_i
+   sum = sum - b[i];   // compute  a_i * x - b_i
+      for (long j=0; j<d; j++) {   // compute gradient F_i: (a_i * x - b_i) a_i
       gradi[j] = sum * A[i*d+j];
    }
-
 }
 
 
@@ -74,27 +71,33 @@ void SGD(long n,              // number of columns of A
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
-
+   double* x_temp = (double*) malloc(d * sizeof(double));
+   vector<long> I(n);
+   for (long i=0; i<n; i++) {
+             I[i] = i;
+         }
+   for (long i=0; i<d; i++) {
+      x_temp[i] = x[i];
+   } 
    //printf("Iteration | Residual\n");
    residual(n, d, A, x, b, r);
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
-       #pragma omp parallel num_threads(num_of_threads) firstprivate(gradi) shared(n,d,A,x_new)
+      
+       #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b)
          {
-         int ThreadID = omp_get_thread_num();
-         double* x_temp = (double*) malloc(d * sizeof(double));
 
-         vector<long> I(n);
-         for (long i=0; i<n; i++) {
-            x_temp[i] = x[i];
-             I[i] = i;
-         } 
+         // get thread number
+         int ThreadID = omp_get_thread_num();
+         //set x_temp to current x
+
          shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
          
          for (long k=0; k<n; k++){   // swipe through each data point
-            double i = I[k];    // get randomly permuted intex
+            
+            long i = I[k];    // get randomly permuted intex
             gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i
             
             for (long j=0; j<d; j++) {   // update x = x - eta * gradi
@@ -102,25 +105,31 @@ void SGD(long n,              // number of columns of A
             }  // end of x update
          }
 
+         // log vector into grid of vectors
          for (long i=0; i<d; i++) {
             x_new[i+ThreadID*d] = x_temp[i];
          }
 
-         free(x_temp);
       }  // end of sweep through n data points
-      for (long i = 0; i < d; i++) {
 
+      //update x
+      for (long i = 0; i < d; i++) {
          x[i] = 0;
          for (long j = 0; j < num_of_threads; j++) {
             x[i] += x_new[i+j*d];
          }
          x[i] = x[i]/num_of_threads;
+         x_temp[i] = x[i];
       }
+
       residual(n, d, A, x, b, r);  // Compute residual r = Ax - b
       printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);  
-   }  // end of SGD
+   }  // end of SG
+
    free(x_new);
    free(gradi);
+   free(x_temp);
+
 }
 
 

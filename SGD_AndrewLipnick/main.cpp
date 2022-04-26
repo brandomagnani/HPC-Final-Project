@@ -19,12 +19,12 @@ int main(int argc, char** argv)
     srand48(0);
 
    // Initialize parameters
-   long n     = 40;        // Number of rows in A
-   long d     = 30;         // Number of cols in A
-   double eta = 0.001;       // Learning rate
+   long n     = 400;        // Number of rows in A
+   long d     = 300;         // Number of cols in A
+   double eta = 0.00001;       // Learning rate
    long T     = 10;       // Number of iterations of stochastic gradient descent
    
-   int num_of_threads = 16;    //number of threads
+   int num_of_threads = 2;    //number of threads
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix
@@ -52,7 +52,8 @@ int main(int argc, char** argv)
 
    for (long i=0; i<d; i++) //reset x
        x[i] = x_store[i];
-   eta = 0.01;
+
+   eta = 0.0005;
    SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
    
     
