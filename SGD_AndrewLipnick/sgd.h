@@ -1,48 +1,41 @@
-#ifndef GRADIENT_DESCENT_H
-#define GRADIENT_DESCENT_H
+#ifndef GRADIENT_DESCENTS_H
+#define GRADIENT_DESCENTS_H
 
 #include <stdio.h>
 #include <math.h>
-//#include <omp.h>
+#include <omp.h>
 #include <random>         // for the random number generators
 #include <stdlib.h>
 #include "MMult.h"
+#include "gradient_descent.h"
+#include <algorithm>    // std::shuffle
+
 using namespace std;
 
 
-// Takes the transpose of an (n x d) matrix A. Stores the result in At.
-void transpose(long n, long d, double* A, double* At) {
-    for (long i=0; i<n; i++) {
-        for (long j=0; j<d; j++) {
-            // At[j, i] = A[i, j]
-            At[j + d*i] = A[i + n*j];
-        }
-    }
-}
-
 
 // Computes r = Ax - b.
-void residual(long n, long d, double* A, double* x, double* b, double* r)
-{
-   double* Ax = (double*) calloc(n, sizeof(double));
-   MMult0(n, 1, d, A, x, Ax);
+// void residual(long n, long d, double* A, double* x, double* b, double* r)
+// {
+//    double* Ax = (double*) calloc(n, sizeof(double));
+//    MMult0(n, 1, d, A, x, Ax);
    
-   for (long i=0; i<n; i++) {
-      r[i] = Ax[i] - b[i];
-   }
+//    for (long i=0; i<n; i++) {
+//       r[i] = Ax[i] - b[i];
+//    }
    
-   free(Ax);
-}
+//    free(Ax);
+// }
 
 
-// Computes the 2-norm of r
-double norm(double* r, long n) {
-   float mag = 0.0;
-   for (long i=0; i<n; i++) {
-      mag = mag + r[i]*r[i];
-   }
-   return sqrt(mag);
-}
+// // Computes the 2-norm of r
+// double norm(double* r, long n) {
+//    float mag = 0.0;
+//    for (long i=0; i<n; i++) {
+//       mag = mag + r[i]*r[i];
+//    }
+//    return sqrt(mag);
+// }
 
 
 // Computes grad(F_i(x)) = (a_i * x - b_i) a_i, where
@@ -76,32 +69,52 @@ void SGD(long n,              // number of columns of A
          double *A,           // data matrix of size (n x d)
          double *x,           // features vector of size (d x 1)
          double *b,           // vector of size (n x 1)
-         double *gradi,       // for gradient of F_i, vector of size (d x 1)
          double *r,           // for residual (Ab - x), vector of size (n x 1)
          vector<long> &I,      // vector of size n, contains indices for reshuffling
-         mt19937 RG) {         // Marsenne Twister random number generator
+         mt19937 RG,          // Marsenne Twister random number generator
+         int num_of_threads) {
    
-   
-   printf("Iteration | Residual\n");
-   
+   double* gradi   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+   double* x_new   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+   //printf("Iteration | Residual\n");
+   double tt = omp_get_wtime();
+
    for (long t=0; t<T; t++){   // do T iterations of SGD step
-      shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
-      
-      for (long k=0; k<n; k++){   // swipe through each data point
-         double i = I[k];    // get randomly permuted intex
-         gradFi(n, d, i, A, x, b, gradi);  // compute gradient of F_i
-         
-         for (long j=0; j<d; j++) {   // update x = x - eta * gradi
-            x[j] = x[j] - eta*gradi[j];
+      for (long i = 0; i < d; i++){
+            x_new[i] = 0;
+         }
+      #pragma omp parallel num_threads(num_of_threads) reduction (+:x_new) {
+         shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
+         //create local var for each thread
+         double* x_temp = (double*) malloc(d * sizeof(double));
+         // x_temp = x;      
+         for (long i = 0; i < d; i++){
+            x_temp[i] = x[i];
+         }
+
+         for (long k=0; k<n; k++){   // swipe through each data point
+            double i = I[k];    // get randomly permuted intex
+            gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i
             
-         }  // end of x update
-         
+            for (long j=0; j<d; j++) {   // update x = x - eta * gradi
+               x_temp[j] = x_temp[j] - eta*gradi[j];   
+            }  // end of x update
+         }
+         for (long i = 0; i < d; i++){
+            x_new[i] += x_temp[i];
+         }
+         free(x_temp);
       }  // end of sweep through n data points
-      
+
+      for (long i = 0; i < d; i++){
+         x[i] = x_new[i]/num_of_threads;
+      }
+
       residual(n, d, A, x, b, r);  // Compute residual r = Ax - b
-      printf("%3ld       | %f\n", t, norm(r, n));
-      
+      printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);  
    }  // end of SGD
+   free(x_new);
+   free(gradi);
 }
 
 

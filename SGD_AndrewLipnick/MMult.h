@@ -9,6 +9,17 @@
 
 #define BLOCK_SIZE 16
 
+void Matvec0(long d, long n, double *A, double *x, double* Ax) { // calcs Ax
+   //#pragma omp for // parallelize over rows
+   for (long i = 0; i < d; i++){
+      Ax[i] = 0.0;
+      for (long j = 0; i < n; j++) {
+         Ax[i] += A[i*n+j]*x[j]; //dot product
+      }
+   }
+
+}
+
 // NOTE: matrices are stored in column major order; i.e. the array elements in
 // the (m x n) matrix C are stored in the sequence: {C_00, C_10, ..., C_m0,
 // C_01, C_11, ..., C_m1, C_02, ..., C_0n, C_1n, ..., C_mn}
