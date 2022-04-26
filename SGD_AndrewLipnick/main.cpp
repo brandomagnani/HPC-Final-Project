@@ -19,10 +19,10 @@ int main(int argc, char** argv)
     srand48(0);
 
    // Initialize parameters
-   long n     = 4;        // Number of rows in A
-   long d     = 3;         // Number of cols in A
-   double eta = 0.1;       // Learning rate
-   long T     = 100;       // Number of iterations of stochastic gradient descent
+   long n     = 40;        // Number of rows in A
+   long d     = 30;         // Number of cols in A
+   double eta = 0.001;       // Learning rate
+   long T     = 10;       // Number of iterations of stochastic gradient descent
    
    int num_of_threads = 1;    //number of threads
 
@@ -33,14 +33,14 @@ int main(int argc, char** argv)
    double* x_store = (double*) malloc(d * sizeof(double));        // (d x 1) vector
    double* At      = (double*) malloc(d * n * sizeof(double));    // (d x n) data matrix (transpose of A)
    double* r       = (double*) malloc(n * sizeof(double));        // (n x 1) vector (r = Ax-b)
-   vector<long> I(n);       // contains numbers from 0 to n-1, used for reshuffling
+   // vector<long> I(n);       // contains numbers from 0 to n-1, used for reshuffling
    
    // set up data points
    for (long i=0; i<n*d; i++)
        A[i] = drand48();
    for (long i=0; i<n; i++) {
        b[i] = drand48();
-       I[i] = i;
+       // I[i] = i;
    }
    for (long i=0; i<d; i++) {
        x[i] = drand48();
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
    for (long i=0; i<d; i++) //reset x
        x[i] = x_store[i];
 
-   SGD(n, d, T, eta, A, x, b, r, I, RG, num_of_threads); //run stochastic gradient descent
+   SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
    
     
     // Free memory

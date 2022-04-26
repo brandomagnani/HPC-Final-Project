@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
-//#include <omp.h>
+#include <omp.h>
 #include "utils.h"
 
 
@@ -12,12 +12,14 @@
 void Matvec0(long d, long n, double *A, double *x, double* Ax) { // calcs Ax
    //#pragma omp for // parallelize over rows
    for (long i = 0; i < d; i++){
-      Ax[i] = 0.0;
-      for (long j = 0; i < n; j++) {
-         Ax[i] += A[i*n+j]*x[j]; //dot product
+      double a = 0.0;
+      for (long j = 0; j < n; j++) {
+         double A_ij = A[i*n+j];
+         double x_j = x[j];
+         a += A_ij*x_j; //dot product
       }
+      Ax[i] = a;
    }
-
 }
 
 // NOTE: matrices are stored in column major order; i.e. the array elements in

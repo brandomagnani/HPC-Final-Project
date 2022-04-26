@@ -1,6 +1,7 @@
 #ifndef GRADIENT_DESCENT_H
 #define GRADIENT_DESCENT_H
 
+
 #include <stdio.h>
 #include <math.h>
 #include <omp.h>
@@ -27,6 +28,7 @@ void residual(long n, long d, double* A, double* x, double* b, double* r)
     // Computes r = Ax - b.
     double* Ax = (double*) calloc(n, sizeof(double));
     Matvec0(d, n, A, x, Ax);
+    // MMult0(n, 1, d, A, x, Ax);
 
     for (long i=0; i<n; i++) {
         r[i] = Ax[i] - b[i];
@@ -56,10 +58,11 @@ void gradientIteration(long n, long d, double* A, double* At,
     residual(n, d, A, x, b, r);
 
     // Reset gradient
-    for (long i=0; i<d; i++)
-        grad[i] = 0.0;
+    // for (long i=0; i<d; i++)
+    //     grad[i] = 0.0;
     // Update grad = A^T(Ax-b) (multiply by 1/n later)
-    Matvec0(d, n, At, r, grad); 
+     Matvec0(d, n, At, r, grad); 
+    // MMult0(d, 1, n, At, r, grad); 
 
     // Perform iteration
     for (long i=0; i<d; i++) {
@@ -73,6 +76,7 @@ void gradientDescent(long n, long d, double* A, double* At,
 {
     //printf("Iteration | Residual\n");
     double* grad   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+    residual(n, d, A, x, b, r);
     double tt = omp_get_wtime();
     for (long i=0; i<n_iter; i++) 
     {
