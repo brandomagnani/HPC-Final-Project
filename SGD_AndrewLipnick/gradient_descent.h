@@ -76,12 +76,11 @@ void gradientDescent(long n, long d, double* A, double* At,
 {
     //printf("Iteration | Residual\n");
     double* grad   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
-    residual(n, d, A, x, b, r);
     double tt = omp_get_wtime();
     for (long i=0; i<n_iter; i++) 
     {
-        printf("%f, %f\n", norm(r, n), omp_get_wtime()-tt);
         gradientIteration(n, d, A, At, x, b, r, grad, eta);
+        printf("%f, %f\n", norm(r, n), omp_get_wtime()-tt);
     }
     free(grad);
 }

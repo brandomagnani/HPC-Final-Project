@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
    for (long i=0; i<d; i++) //reset x
        x[i] = x_store[i];
-
+   eta = 0.01;
    SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
    
     

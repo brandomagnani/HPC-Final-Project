@@ -74,8 +74,11 @@ void SGD(long n,              // number of columns of A
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
+
    //printf("Iteration | Residual\n");
+   residual(n, d, A, x, b, r);
    double tt = omp_get_wtime();
+   printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
        #pragma omp parallel num_threads(num_of_threads) firstprivate(gradi) shared(n,d,A,x_new)
