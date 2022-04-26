@@ -78,13 +78,13 @@ void SGD(long n,              // number of columns of A
    double tt = omp_get_wtime();
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
-       printf("got here\n" );
-       #pragma omp parallel num_threads(num_of_threads) 
+       printf("iteration %ld started\n",t );
+       #pragma omp parallel num_threads(num_of_threads) firstprivate(gradi) shared(n,d,A,x_new)
          {
-         printf("got here\n" );
+         int ThreadID = omp_get_thread_num();
+         printf("thread %d started \n", ThreadID );
          double* x_temp = (double*) malloc(d * sizeof(double));
 
-         int ThreadID = omp_get_thread_num();
          vector<long> I(n);
          for (long i=0; i<n; i++) {
             x_temp[i] = x[i];
@@ -106,8 +106,9 @@ void SGD(long n,              // number of columns of A
          }
 
          free(x_temp);
+         printf("thread %d freed \n", ThreadID );
       }  // end of sweep through n data points
-      
+      printf("parallel region ended \n" );
       for (long i = 0; i < d; i++) {
          x[i] = 0;
          for (long j = 0; j < num_of_threads; j++) {

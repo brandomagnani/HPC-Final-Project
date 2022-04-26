@@ -24,7 +24,7 @@ int main(int argc, char** argv)
    double eta = 0.001;       // Learning rate
    long T     = 10;       // Number of iterations of stochastic gradient descent
    
-   int num_of_threads = 1;    //number of threads
+   int num_of_threads = 2;    //number of threads
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix
