@@ -26,7 +26,7 @@ void transpose(long m, long n, double* A, double* At)
 void residual(long n, long d, double* A, double* x, double* b, double* r)
 {
     // Computes r = Ax - b.
-    double* Ax = (double*) calloc(n, sizeof(double));
+    double* Ax = (double*) malloc(n * sizeof(double));
     Matvec0(d, n, A, x, Ax);
     // MMult0(n, 1, d, A, x, Ax);
 
