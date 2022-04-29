@@ -63,7 +63,7 @@ void gradientIteration(long n, long d, double* A, double* At,
 
     // Perform iteration
     for (long i=0; i<d; i++) {
-        x[i] = x[i] - eta / (double) n * grad[i];
+        x[i] = x[i] - eta * grad[i];
     }
 }
 
