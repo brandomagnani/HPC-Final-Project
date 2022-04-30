@@ -31,7 +31,7 @@ void residual(long n, long d, double* A, double* x, double* b, double* r)
     // MMult0(n, 1, d, A, x, Ax);
 
     for (long i=0; i<n; i++) {
-        r[i] = Ax[i] - b[i];
+        r[i] = Ax[i] - b[i]; //1 flop -> n flops
     }
 
     free(Ax);
