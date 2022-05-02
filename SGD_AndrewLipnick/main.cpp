@@ -20,12 +20,12 @@ int main(int argc, char** argv)
     srand48(0);
 
    // Initialize parameters
-   long n     = 4000;        // Number of rows in A
-   long d     = 3000;         // Number of cols in A
-   double eta = 0.000001;       // Learning rate
-   long T     = 10;       // Number of iterations of stochastic gradient descent
+   long n     = 40000;        // Number of rows in A
+   long d     = 20000;         // Number of cols in A
+   double eta = double(2)/double (n*d);       // Learning rate
+   long T     = 3;       // Number of iterations of stochastic gradient descent
    
-   int num_of_threads = 1;    //number of threads
+   int num_of_threads = 16;    //number of threads
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix
@@ -43,6 +43,17 @@ int main(int argc, char** argv)
        b[i] = drand48();
        // I[i] = i;
    }
+
+   // for (long i =0; i<n; i++ ){
+   //  for (long j = 0; j<d; j++){
+   //      if (i==j){
+   //          A[i+d*j]=1;
+   //      }
+   //      else{
+   //          A[i+d*j] = 0;
+   //      }
+   //  }
+   // }
    for (long i=0; i<d; i++) {
        x[i] = drand48();
        x_store[i] = x[i];
