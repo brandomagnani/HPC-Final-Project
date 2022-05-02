@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
    // Initialize parameters
    long n     = 4000;        // Number of rows in A
    long d     = 3000;         // Number of cols in A
-   double eta = 0.000001;       // Learning rate
-   long T     = 10;       // Number of iterations of stochastic gradient descent
+   double eta = 0.0000001;       // Learning rate
+   long T     = 100;       // Number of iterations of stochastic gradient descent
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix

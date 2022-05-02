@@ -80,10 +80,12 @@ void SGD(long n,              // number of columns of A
    for (long i=0; i<d; i++) {
       x_temp[i] = x[i];
    } 
-   //printf("Iteration | Residual\n");
+   // printf("Iteration | Residual\n");
    residual(n, d, A, x, b, r);
    double tt = omp_get_wtime();
-   printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
+
+   // printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
+   printf("residual_norm,runtime,flops\n"); 
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
       

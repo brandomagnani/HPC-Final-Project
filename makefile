@@ -7,4 +7,4 @@ main.o : main.cpp #MMult.h sgd.h
 	g++ -std=c++11 -fopenmp -O3 -march=native main.cpp -o main    
 
 clean:
-	rm -f main *.out
+	rm -f main *.out output/*.csv
