@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
    // Initialize parameters
    long n     = 4000;        // Number of rows in A
    long d     = 4000;         // Number of cols in A
-   double eta = 0.01;       // Learning rate
-   long T     = 100;       // Number of iterations of stochastic gradient descent
+   double eta = 0.0000001;       // Learning rate
+   long T     = 1000;       // Number of iterations of stochastic gradient descent
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix
@@ -61,19 +61,19 @@ int main(int argc, char *argv[])
    transpose(d, n, A, At); // create transposed matrix for gradient descent
 
 
-   // gradientDescent(n, d, A, At, x, b, r, eta, T); //run gradient descent
-   // printf("\n");
+   gradientDescent(n, d, A, At, x, b, r, eta, T); //run gradient descent
+   printf("\n");
 
-   for (long i=0; i<d; i++) //reset x
-       x[i] = x_store[i];
+   // for (long i=0; i<d; i++) //reset x
+   //    x[i] = x_store[i];
 
    // eta = eta*20;
    
    // Run stochastic gradient descent
-   SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads);
+   //SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads);
    
-   for (long i=0; i<d; i++) //reset x
-       x[i] = x_store[i];
+   // for (long i=0; i<d; i++) //reset x
+   //    x[i] = x_store[i];
 
    // SGD_min(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
     

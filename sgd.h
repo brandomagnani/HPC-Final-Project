@@ -70,70 +70,68 @@ void SGD(long n,              // number of columns of A
          mt19937 RG,          // Marsenne Twister random number generator
          int num_of_threads) {
    
-   double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
-   double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
-   double* x_temp = (double*) malloc(d * sizeof(double));
-   vector<long> I(n);
-   for (long i=0; i<n; i++) {
-             I[i] = i;
-         }
-   for (long i=0; i<d; i++) {
-      x_temp[i] = x[i];
-   } 
-   // printf("Iteration | Residual\n");
-   residual(n, d, A, x, b, r);
-   double tt = omp_get_wtime();
+    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
+    double* x_temp = (double*) malloc(d * sizeof(double));
+    vector<long> I(n);
+    for (long i=0; i<n; i++) {
+        I[i] = i;
+    }
+    for (long i=0; i<d; i++) {
+        x_temp[i] = x[i];
+    } 
+    // printf("Iteration | Residual\n");
+    residual(n, d, A, x, b, r);
+    double tt = omp_get_wtime();
 
-   // printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
-   printf("residual_norm,runtime,flops\n"); 
+    // printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
+    printf("residual_norm,runtime,flops\n"); 
 
-   for (long t=0; t<T; t++){   // do T iterations of SGD step
-      
-       #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b)
-         {
+    for (long t=0; t<T; t++)
+    {   // do T iterations of SGD step  
+        #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b)
+        {
+    
+        	// get thread number
+            int ThreadID = omp_get_thread_num();
+            //set x_temp to current x
+    
+            shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
+             
+            for (long k=0; k<n; k++) {   // swipe through each data point
+                long i = I[k];    // get randomly permuted intex
+                gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i // 3d+1 flops
+                
+                for (long j=0; j<d; j++) {   // update x = x - eta * gradi 
+                    x_temp[j] = x_temp[j] - eta*gradi[j];   //2 flops -> 2d flops
+                }  // end of x update
+            }
+    
+            // log vector into grid of vectors
+            for (long i=0; i<d; i++) {
+                x_new[i+ThreadID*d] = x_temp[i];
+            }
+             // each thread does n*(5d+1) flops
+        }  // end of sweep through n data points
+    
+        //update x
+        #pragma omp parallel for schedule(static)
+        for (long i = 0; i < d; i++) {
+            x[i] = 0;
+            for (long j = 0; j < num_of_threads; j++) {
+                x[i] += x_new[i+j*d]; //2 flops -> 2d*num_of_threads flops
+            }
+            x[i] = x[i]/num_of_threads; //d flops
+            x_temp[i] = x[i];
+        }
+    
+        residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
+        printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));  
+    }  // end of SG
 
-         // get thread number
-         int ThreadID = omp_get_thread_num();
-         //set x_temp to current x
-
-         shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
-         
-         for (long k=0; k<n; k++){   // swipe through each data point
-            
-            long i = I[k];    // get randomly permuted intex
-            gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i // 3d+1 flops
-            
-            for (long j=0; j<d; j++) {   // update x = x - eta * gradi 
-               x_temp[j] = x_temp[j] - eta*gradi[j];   //2 flops -> 2d flops
-            }  // end of x update
-         }
-
-         // log vector into grid of vectors
-         for (long i=0; i<d; i++) {
-            x_new[i+ThreadID*d] = x_temp[i];
-         }
-         // each thread does n*(5d+1) flops
-      }  // end of sweep through n data points
-
-      //update x
-      #pragma omp parallel for schedule(static)
-      for (long i = 0; i < d; i++) {
-         x[i] = 0;
-         for (long j = 0; j < num_of_threads; j++) {
-            x[i] += x_new[i+j*d]; //2 flops -> 2d*num_of_threads flops
-         }
-         x[i] = x[i]/num_of_threads; //d flops
-         x_temp[i] = x[i];
-      }
-
-      residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
-      printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));  
-   }  // end of SG
-
-   free(x_new);
-   free(gradi);
-   free(x_temp);
-
+    free(x_new);
+    free(gradi);
+    free(x_temp);
 }
 
 
