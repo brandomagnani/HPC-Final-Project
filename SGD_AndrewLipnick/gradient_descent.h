@@ -55,7 +55,7 @@ void gradientIteration(long n, long d, double* A, double* At,
     // Gradient is given by A^T(Ax - b)
 
     // Update residual r = Ax - b
-    residual(n, d, A, x, b, r);
+    residual(d, n, A, x, b, r);
 
     // Reset gradient
     // for (long i=0; i<d; i++)
@@ -75,6 +75,7 @@ void gradientDescent(long n, long d, double* A, double* At,
                      double eta, long n_iter)
 {
     //printf("Iteration | Residual\n");
+
     double* grad   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
     double tt = omp_get_wtime();
     for (long i=0; i<n_iter; i++) 

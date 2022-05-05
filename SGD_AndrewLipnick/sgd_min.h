@@ -50,7 +50,7 @@ void SGD_min(long n,              // number of columns of A
       x_temp[i] = x[i];
    } 
    //printf("Iteration | Residual\n");
-   residual(n, d, A, x, b, r);
+   residual(d,n, A, x, b, r);
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
@@ -80,19 +80,22 @@ void SGD_min(long n,              // number of columns of A
             x_new[i+ThreadID*d] = x_temp[i];
          }
 
-         residual(n, d, A, x_temp, b, r);
+         residual(d, n, A, x_temp, b, r);
          r_list[ThreadID] =  r[0];
 
       }  // end of sweep through n data points
 
+
+
       //update x
-      indexofSmallestElement(r, num_of_threads, min_index);
+      indexofSmallestElement(r_list, num_of_threads, min_index);
+
       #pragma omp parallel for schedule(static)
       for (long i = 0; i < d; i++) {
          x[i] = x_new[i+d*min_index];
       }
 
-      residual(n, d, A, x, b, r);  // Compute residual r = Ax - b
+      residual(d, n, A, x, b, r);  // Compute residual r = Ax - b
       printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);  
    }  // end of SG
 

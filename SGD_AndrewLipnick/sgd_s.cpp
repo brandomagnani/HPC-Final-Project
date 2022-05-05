@@ -58,7 +58,7 @@ void gradFi(long n, long d, long i, double *A, double *x, double *b, double *gra
 
 
 // performs Stochastic Gradient Descent
-void SGD(long n,              // number of columns of A
+void SGD_s(long n,              // number of columns of A
          long d,              // number of rows    of A
          long T,              // number of iterations for SGD
          double eta,          // learning rate
