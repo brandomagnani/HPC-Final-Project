@@ -1,5 +1,5 @@
-#ifndef GRADIENT_DESCENTS_S_H
-#define GRADIENT_DESCENTS_S_H
+#ifndef GRADIENT_DESCENTS2_H
+#define GRADIENT_DESCENTS2_H
 
 
 #include <stdio.h>
@@ -13,52 +13,8 @@
 
 using namespace std;
 
-
-// Computes r = Ax - b.
-// void residual(long n, long d, double* A, double* x, double* b, double* r)
-// {
-//    double* Ax = (double*) calloc(n, sizeof(double));
-//    MMult0(n, 1, d, A, x, Ax);
-   
-//    for (long i=0; i<n; i++) {
-//       r[i] = Ax[i] - b[i];
-//    }
-   
-//    free(Ax);
-// }
-
-
-// // Computes the 2-norm of r
-// double norm(double* r, long n) {
-//    float mag = 0.0;
-//    for (long i=0; i<n; i++) {
-//       mag = mag + r[i]*r[i];
-//    }
-//    return sqrt(mag);
-// }
-
-
-// Computes grad(F_i(x)) = (a_i * x - b_i) a_i, where
-// a_i is i-th row of A and b_i is i-th element of b
-void gradFi(long n, long d, long i, double *A, double *x, double *b, double *gradi) {
-   
-   // double* ai = (double*) calloc(d, sizeof(double));  // (d x 1) vector, i-th row of A
-   double sum  = 0.;
-   
-
-   for (long j=0; j<d; j++) {    // compute  a_i * x
-      sum += A[i*d+j] * x[j];  //2 flops -> 2d flops
-   }
-   
-   sum = sum - b[i];   // compute  a_i * x - b_i // one flop
-      for (long j=0; j<d; j++) {   // compute gradient F_i: (a_i * x - b_i) a_i
-      gradi[j] = sum * A[i*d+j];  //1 flop -> d flops
-   }
-}
-
-
 // performs Stochastic Gradient Descent
-void SGD_s(long n,              // number of columns of A
+void SGD2(long n,              // number of columns of A
          long d,              // number of rows    of A
          long T,              // number of iterations for SGD
          double eta,          // learning rate
@@ -72,6 +28,8 @@ void SGD_s(long n,              // number of columns of A
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
+   double* x_temp   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+   
    vector<long> I(n);
 
    for (long i=0; i<n; i++) {
@@ -80,52 +38,67 @@ void SGD_s(long n,              // number of columns of A
 
    //printf("Iteration | Residual\n");
 
-   residual(d, n, A, x, b, r);
+
+
+   residual(n, d, A, x, b, r);
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
-   for (long t=0; t<T; t++){   // do T iterations of SGD step
-      
-       #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x,gradi) shared(n,d,A,x_new,b)
-         {
-         // get thread number
-         int ThreadID = omp_get_thread_num();
+   #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b,x)
+   {
+      // get thread number
+      int ThreadID = omp_get_thread_num();
+      for (long t=0; t<T; t++){   // do T iterations of SGD step
+         printf("thread %d started iteration %ld\n", ThreadID,t);
          //set x_temp to current x
+         for(long i = 0; i <d; i++){
+            x_temp[i] = x[i];
+         }
 
          shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
          
          for (long k=0; k<n; k++){   // swipe through each data point
             
             long i = I[k];    // get randomly permuted intex
-            gradFi(n, d, i, A, x, b, gradi);  // compute gradient of F_i // 3d+1 flops
+            gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i // 3d+1 flops
             
             for (long j=0; j<d; j++) {   // update x = x - eta * gradi 
-               x[j] = x[j] - eta*gradi[j];   //2 flops -> 2d flops
+               x_temp[j] = x_temp[j] - eta*gradi[j];   //2 flops -> 2d flops
             }  // end of x update
          }
 
          // log vector into grid of vectors
          for (long i=0; i<d; i++) {
-            x_new[i+ThreadID*d] = x[i];
+            x_new[i+ThreadID*d] = x_temp[i];
          }
          // each thread does n*(5d+1) flops
-      }  // end of sweep through n data points
 
       //update x
       // printf("update time = %f\n", omp_get_wtime()-tt);
+      //#pragma omp parallel for schedule(static)
+      printf("thread %d got to barrier %ld \n", ThreadID, t);
+      #pragma omp barrier
+      printf("thread %d got past barrier %ld \n", ThreadID, t);
+
       #pragma omp parallel for schedule(static)
       for (long i = 0; i < d; i++) {
-         x[i] = 0;
-         for (long j = 0; j < num_of_threads; j++) {
-            x[i] += x_new[i+j*d]; //2 flops -> 2d*num_of_threads flops
-         }
+            x[i] = 0;
+            for (long j = 0; j < num_of_threads; j++) {
+               x[i] += x_new[i+j*d]; //2 flops -> 2d*num_of_threads flops
+            }
          x[i] = x[i]/num_of_threads; //d flops
       }
+         
       // printf("average time = %f\n", omp_get_wtime()-tt);
-
-      residual(d, n, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
-      printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));  
-   }  // end of SG
+      if (ThreadID == 0){
+         residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
+         printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));    
+      }
+      printf("thread %d got to barrier %ld \n", ThreadID, t);
+      #pragma omp barrier
+      printf("thread %d got past barrier %ld \n", ThreadID, t);
+    }  // end of SG
+ }
 
    free(x_new);
    free(gradi);

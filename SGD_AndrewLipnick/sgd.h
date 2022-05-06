@@ -80,12 +80,14 @@ void SGD(long n,              // number of columns of A
 
    //printf("Iteration | Residual\n");
 
-   residual(d, n, A, x, b, r);
+
+
+   residual(n, d, A, x, b, r);
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
-      
+
        #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x,gradi) shared(n,d,A,x_new,b)
          {
          // get thread number
@@ -123,7 +125,7 @@ void SGD(long n,              // number of columns of A
       }
       // printf("average time = %f\n", omp_get_wtime()-tt);
 
-      residual(d, n, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
+      residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
       printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));  
    }  // end of SG
 
