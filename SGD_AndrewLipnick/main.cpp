@@ -13,23 +13,28 @@
 #include "gradient_descent.h"
 using namespace std;
 
-int main(int argc, char** argv)
+int main(int argc, char *argv[])
 {
+    int num_of_threads = stoi(argv[1], nullptr, 0);    //number of threads
+
+   // Initialize parameters - These are the only ones to train
+   long n     = 1000000;        // Number of rows in A
+   long d     = 1000;         // Number of cols in A
+   int s      = n/1000.0;              //mini batch size
+   double sf  = 0.1;         //stopping factor
+
+   long T     = 100;       // Number of iterations of stochastic gradient descent
+   double eta = 1/double (n*d);       // Learning rate
+
    
     unsigned seed = 17U;     // seed for the random number generator -- 17 is the most random number?
     mt19937 RG(seed);        // Mersenne twister random number generator
+
+    normal_distribution<double> SN(0.,5.);
+    uniform_real_distribution<double> SU(0.,1.);
    
     // Set random seed:
     srand48(0);
-
-   // Initialize parameters
-   long n     = 1000000;        // Number of rows in A
-   long d     = 100;         // Number of cols in A
-   double eta = 1/double (n*d);       // Learning rate
-   long T     = 2;       // Number of iterations of stochastic gradient descent
-   
-   int num_of_threads = 2;    //number of threads
-   int s = 5;                  //mini batch size
 
    // Initialize matrices
    double* A       = (double*) malloc(n * d * sizeof(double));    // (n x d) data matrix
@@ -40,24 +45,22 @@ int main(int argc, char** argv)
    double* r       = (double*) malloc(n * sizeof(double));        // (n x 1) vector (r = Ax-b)
    // vector<long> I(n);       // contains numbers from 0 to n-1, used for reshuffling
    
+
    // set up data points
    for (long i=0; i<n*d; i++) {
-        A[i] = drand48();
+        A[i] = SN(RG);
     }
 
     for (long i=0; i<d; i++) {
-       x[i] = drand48();
+       x[i] = SN(RG);
        // I[i] = i;
    }   
 
    Matvec0(d, n, A, x, b);
-   for (long i=0; i<n; i++) {
-       b[i] += d*drand48();
-   }
 
-   //  for (long i=0; i<n; i++) {
-   //     b[i] = drand48();
-   // }
+   for (long i=0; i<n; i++) {
+       b[i] += SN(RG);
+   }
 
    // for (long i =0; i<n; i++ ){
    //  for (long j = 0; j<d; j++){
@@ -69,53 +72,23 @@ int main(int argc, char** argv)
    //      }
    //  }
    // }
+
    for (long i=0; i<d; i++) {
-       x[i] = 0;
+       // x[i] += SU(RG);
+        x[i] = 0;
        x_store[i] = x[i];
    }
 
-    transpose(d, n, A, At); // create transposed matrix for gradient descent
-
-    // gradientDescent(n, d, A, At, x, b, r, eta, T); //run gradient descent
-
+    transpose(n, d, A, At); // create transposed matrix for gradient descent
+    gradientDescent(n, d, A, At, x, b, r, eta, T, sf); //run gradient descent
 
     for (long i=0; i<d; i++) //reset x
-       x[i] = 0;
+       x[i] = x_store[i];
 
-   // SGD(n, d, T, eta, A, x, b, r, RG, 1); //run stochastic gradient descent
 
-   // for (long i=0; i<d; i++) //reset x
-   //     x[i] = 0;
+    // SGD_s(n, d, T, eta*double(n/s), A, x, b, r, RG, num_of_threads, s, sf); //run stochastic gradient descent
 
-   SGD(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
 
-    for (long i=0; i<d; i++) //reset x
-       x[i] = 0;
-
-   SGD2(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
-   
-   //  for (long i=0; i<d; i++) //reset x
-   //     x[i] = 0;
-
-   // SGD(n, d, T, eta, A, x, b, r, RG, 4); //run stochastic gradient descent
-   
-   //  for (long i=0; i<d; i++) //reset x
-   //     x[i] = 0;
-
-   // SGD(n, d, T, eta, A, x, b, r, RG, 16); //run stochastic gradient descent
-   
-   
-   
-   // // for (long i=0; i<d; i++) //reset x
-   //     x[i] = 0;
-
-   // SGD_min(n, d, T, eta, A, x, b, r, RG, num_of_threads); //run stochastic gradient descent
-
-    // for (long i=0; i<d; i++) //reset x
-    //    x[i] = 0;
-
-   // SGD_s(n, d, T, eta, A, x, b, r, RG, num_of_threads,s);
-    
     // Free memory
    free(A);
    free(b);

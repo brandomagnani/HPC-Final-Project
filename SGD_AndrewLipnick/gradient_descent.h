@@ -12,13 +12,13 @@
 
 using namespace std;
 
-void transpose(long m, long n, double* A, double* At)
+void transpose(long n, long d, double* A, double* At)
 {
-    // Takes the transpose of an mxn matrix A. Stores the result in At.
-    for (long i=0; i<m; i++) {
-        for (long j=0; j<n; j++) {
+    // Takes the transpose of an ncd matrix A. Stores the result in At.
+    for (long i=0; i<n; i++) {
+        for (long j=0; j<d; j++) {
             // At[j, i] = A[i, j]
-            At[j + n*i] = A[i + m*j];
+            At[i+n*j] = A[i*d+j];
         }
     }
 }
@@ -72,17 +72,22 @@ void gradientIteration(long n, long d, double* A, double* At,
 
 void gradientDescent(long n, long d, double* A, double* At, 
                      double* x, double* b, double* r,
-                     double eta, long n_iter)
+                     double eta, long n_iter, double sf)
 {
     //printf("Iteration | Residual\n");
 
-    double* grad   = (double*) malloc(n * sizeof(double));        // (d x 1) vector for grad(F_i(x))
+    double* grad   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
     double tt = omp_get_wtime();
-
+    residual(n, d, A, x, b, r);
+    double tol = sf * norm(r, n);
     for (long i=0; i<n_iter; i++) 
     {
         gradientIteration(n, d, A, At, x, b, r, grad, eta);
-        printf("%f, %f\n", norm(r, n), omp_get_wtime()-tt);
+        double res = norm(r, n);
+        printf("%f, %f\n", res, omp_get_wtime()-tt);
+        if (res < tol) {
+            break;
+        }
     }
     free(grad);
 }

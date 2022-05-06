@@ -11,7 +11,7 @@
 
 void Matvec0(long d, long n, double *A, double *x, double* Ax) { // calcs Ax
 
-   #pragma omp for schedule(static) // parallelize over rows
+   // #pragma omp for schedule(static) // parallelize over rows
    for (long i = 0; i < n; i++){
       double a = 0.0;
       for (long j = 0; j < d; j++) {

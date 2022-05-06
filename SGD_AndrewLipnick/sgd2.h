@@ -24,7 +24,7 @@ void SGD2(long n,              // number of columns of A
          double *r,           // for residual (Ab - x), vector of size (n x 1)
          // vector<long> &I,      // vector of size n, contains indices for reshuffling
          mt19937 RG,          // Marsenne Twister random number generator
-         int num_of_threads) {
+         int num_of_threads,double sf) {
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
@@ -41,15 +41,16 @@ void SGD2(long n,              // number of columns of A
 
 
    residual(n, d, A, x, b, r);
+   double res =norm(r, n);
+   double tol = sf * res;
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
-   #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b,x)
+   #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x_temp,gradi) shared(n,d,A,x_new,b,x,r,res)
    {
       // get thread number
       int ThreadID = omp_get_thread_num();
       for (long t=0; t<T; t++){   // do T iterations of SGD step
-         printf("thread %d started iteration %ld\n", ThreadID,t);
          //set x_temp to current x
          for(long i = 0; i <d; i++){
             x_temp[i] = x[i];
@@ -76,9 +77,7 @@ void SGD2(long n,              // number of columns of A
       //update x
       // printf("update time = %f\n", omp_get_wtime()-tt);
       //#pragma omp parallel for schedule(static)
-      printf("thread %d got to barrier %ld \n", ThreadID, t);
       #pragma omp barrier
-      printf("thread %d got past barrier %ld \n", ThreadID, t);
 
       #pragma omp parallel for schedule(static)
       for (long i = 0; i < d; i++) {
@@ -92,11 +91,15 @@ void SGD2(long n,              // number of columns of A
       // printf("average time = %f\n", omp_get_wtime()-tt);
       if (ThreadID == 0){
          residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
-         printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));    
+         res = norm(r, n);
+         printf("%f,%f,%f\n", res, omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));    
+         
       }
-      printf("thread %d got to barrier %ld \n", ThreadID, t);
+
       #pragma omp barrier
-      printf("thread %d got past barrier %ld \n", ThreadID, t);
+      if (res < tol){
+         break;
+         }
     }  // end of SG
  }
 
