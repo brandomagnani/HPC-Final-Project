@@ -10,11 +10,12 @@
 #define BLOCK_SIZE 16
 
 void Matvec0(long d, long n, double *A, double *x, double* Ax) { // calcs Ax
-   #pragma omp for schedule(static) // parallelize over rows
-   for (long i = 0; i < d; i++){
+
+   // #pragma omp for schedule(static) // parallelize over rows
+   for (long i = 0; i < n; i++){
       double a = 0.0;
-      for (long j = 0; j < n; j++) {
-         double A_ij = A[i*n+j];
+      for (long j = 0; j < d; j++) {
+         double A_ij = A[i*d+j];
          double x_j = x[j];
          a += A_ij*x_j; //dot product //2flops -> 2dn flops
       }

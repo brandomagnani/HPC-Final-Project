@@ -1,5 +1,5 @@
-#ifndef GRADIENT_DESCENTS_H
-#define GRADIENT_DESCENTS_H
+#ifndef GRADIENT_DESCENTS_S_H
+#define GRADIENT_DESCENTS_S_H
 
 
 #include <stdio.h>
@@ -58,7 +58,7 @@ void gradFi(long n, long d, long i, double *A, double *x, double *b, double *gra
 
 
 // performs Stochastic Gradient Descent
-void SGD(long n,              // number of columns of A
+void SGD_s(long n,              // number of columns of A
          long d,              // number of rows    of A
          long T,              // number of iterations for SGD
          double eta,          // learning rate
@@ -68,7 +68,7 @@ void SGD(long n,              // number of columns of A
          double *r,           // for residual (Ab - x), vector of size (n x 1)
          // vector<long> &I,      // vector of size n, contains indices for reshuffling
          mt19937 RG,          // Marsenne Twister random number generator
-         int num_of_threads, double sf) {
+         int num_of_threads) {
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
@@ -80,15 +80,12 @@ void SGD(long n,              // number of columns of A
 
    //printf("Iteration | Residual\n");
 
-
-
-   residual(n, d, A, x, b, r);
-   double tol = sf * norm(r, n);
+   residual(d, n, A, x, b, r);
    double tt = omp_get_wtime();
    printf("%f,%f\n", norm(r, n), omp_get_wtime()-tt);
 
    for (long t=0; t<T; t++){   // do T iterations of SGD step
-
+      
        #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x,gradi) shared(n,d,A,x_new,b)
          {
          // get thread number
@@ -126,13 +123,8 @@ void SGD(long n,              // number of columns of A
       }
       // printf("average time = %f\n", omp_get_wtime()-tt);
 
-      residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
-      double res = norm(r, n);
-      printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));
-      if (res < tol){
-         break;
-      }     
-   
+      residual(d, n, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
+      printf("%f,%f,%f\n", norm(r, n), omp_get_wtime()-tt, ((5*d+1)*n*num_of_threads +2*d*num_of_threads+d +2*d*n+n)/(omp_get_wtime()-tt));  
    }  // end of SG
 
    free(x_new);
