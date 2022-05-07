@@ -112,9 +112,9 @@ void SGD_s( long n,              // number of columns of A
 
       // calc residual
       residual(n, d, A, x, b, r, Ax);  // Compute residual r = Ax - b //2*d*n+n flops
-      double res = norm(r, n);
+      double res = norm(r, n);         // compute norm of residual
 
-      // print residual
+      // print norm of residual, time, update time, giga flops per sec
       printf("%f, %f , %f, %f\n", res, omp_get_wtime()-tt, update_time, (double((5*d+1)*s*num_of_threads))/(update_time*1e9));
 
       // check if below tolerance
