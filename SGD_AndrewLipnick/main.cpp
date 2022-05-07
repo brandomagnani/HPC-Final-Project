@@ -8,6 +8,7 @@
 #include "sgd.h"
 #include "sgd_min.h"
 #include "sgd_s.h"
+#include "sgd2s.h"
 #include "sgd_r.h"
 #include "sgd2.h"
 #include "gradient_descent.h"
@@ -18,13 +19,13 @@ int main(int argc, char *argv[])
     int num_of_threads = stoi(argv[1], nullptr, 0);    //number of threads
 
    // Initialize parameters - These are the only ones to train
-   long n     = 1000000;        // Number of rows in A
+   long n     = 1000000;      // Number of rows in A
    long d     = 1000;         // Number of cols in A
-   int s      = n/1000.0;              //mini batch size
-   double sf  = 0.1;         //stopping factor
+   int s      = d;     //mini batch size
+   double sf  = 0.1;          //stopping factor
 
    long T     = 100;       // Number of iterations of stochastic gradient descent
-   double eta = 1/double (n*d);       // Learning rate
+   double eta = 1.0/double (n*d);       // Learning rate
 
    
     unsigned seed = 17U;     // seed for the random number generator -- 17 is the most random number?
@@ -52,11 +53,11 @@ int main(int argc, char *argv[])
     }
 
     for (long i=0; i<d; i++) {
-       x[i] = SN(RG);
+       x[i] = SN(RG)+10*SU(RG);
        // I[i] = i;
    }   
 
-   Matvec0(d, n, A, x, b);
+   Matvec0(d, n, A, x, b); //b = Ax
 
    for (long i=0; i<n; i++) {
        b[i] += SN(RG);
@@ -75,18 +76,22 @@ int main(int argc, char *argv[])
 
    for (long i=0; i<d; i++) {
        // x[i] += SU(RG);
-        x[i] = 0;
+       x[i] = 0;
        x_store[i] = x[i];
    }
 
-    transpose(n, d, A, At); // create transposed matrix for gradient descent
-    gradientDescent(n, d, A, At, x, b, r, eta, T, sf); //run gradient descent
+    // transpose(n, d, A, At); // create transposed matrix for gradient descent
+    // gradientDescent(n, d, A, At, x, b, r, eta, T, sf); //run gradient descent
 
+    // for (long i=0; i<d; i++) //reset x
+    //    x[i] = x_store[i];
+
+    SGD_s(n, d, T, eta*double(n/s), A, x, b, r, RG, num_of_threads, s, sf); //run stochastic gradient descent
+    
     for (long i=0; i<d; i++) //reset x
-       x[i] = x_store[i];
+         x[i] = x_store[i];
 
-
-    // SGD_s(n, d, T, eta*double(n/s), A, x, b, r, RG, num_of_threads, s, sf); //run stochastic gradient descent
+    // SGD2_s(n, d, T, eta*double(n/s), A, x, b, r, RG, num_of_threads, s, sf); //run stochastic gradient descent
 
 
     // Free memory
