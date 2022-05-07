@@ -1,5 +1,5 @@
-#ifndef GRADIENT_DESCENT_H
-#define GRADIENT_DESCENT_H
+#ifndef Tools_H
+#define Tools_H
 
 #include <stdio.h>
 #include <math.h>
