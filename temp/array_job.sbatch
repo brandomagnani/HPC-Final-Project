@@ -5,9 +5,9 @@
 #SBATCH --job-name=cpp
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=32
-#SBATCH --time=3:00:00
-#SBATCH --mem=16GB
+#SBATCH --cpus-per-task=8
+#SBATCH --time=1:00:00
+#SBATCH --mem=8GB
 #SBATCH --output=output/%a_threads_sgd.csv
 
 module purge
