@@ -7,35 +7,10 @@
 #include <omp.h>
 #include <random>         // for the random number generators
 #include <stdlib.h>
-#include "MMult.h"
-#include "gradient_descent.h"
+#include "tools.h"
 #include <algorithm>    // std::shuffle
 
 using namespace std;
-
-
-// Computes r = Ax - b.
-// void residual(long n, long d, double* A, double* x, double* b, double* r)
-// {
-//    double* Ax = (double*) calloc(n, sizeof(double));
-//    MMult0(n, 1, d, A, x, Ax);
-   
-//    for (long i=0; i<n; i++) {
-//       r[i] = Ax[i] - b[i];
-//    }
-   
-//    free(Ax);
-// }
-
-
-// // Computes the 2-norm of r
-// double norm(double* r, long n) {
-//    float mag = 0.0;
-//    for (long i=0; i<n; i++) {
-//       mag = mag + r[i]*r[i];
-//    }
-//    return sqrt(mag);
-// }
 
 
 // Computes grad(F_i(x)) = (a_i * x - b_i) a_i, where
@@ -44,7 +19,6 @@ void gradFi(long n, long d, long i, double *A, double *x, double *b, double *gra
    
    // double* ai = (double*) calloc(d, sizeof(double));  // (d x 1) vector, i-th row of A
    double sum  = 0.;
-   
 
    for (long j=0; j<d; j++) {    // compute  a_i * x
       sum += A[i*d+j] * x[j];  //2 flops -> 2d flops
@@ -97,15 +71,14 @@ void SGD_s( long n,              // number of columns of A
          unsigned seed = (17*ThreadID);     // seed for the random number generator -- 17 is the most random number?
          mt19937 RG(seed);        // Mersenne twister random number generator
 
+         // start timer for flop calc
          if (ThreadID == 0) {
             tt2 = omp_get_wtime();
          }
 
          for (long k=0; k<s; k++){   // swipe through each data point
-               long i = SU(RG);    // get randomly permuted intex
-               // if (k==0){
-               //    printf("Thread %d's first index is %ld\n",ThreadID, i);
-               // }
+               long i = SU(RG);    // get random index
+            
                gradFi(n, d, i, A, x, b, gradi);  // compute gradient of F_i // 3d+1 flops
        
             for (long j=0; j<d; j++) {   // update x = x - eta * gradi 
@@ -113,20 +86,21 @@ void SGD_s( long n,              // number of columns of A
             }  // end of x update
 
          }
+
+         //end timer for flop count
          if (ThreadID == 0) {
             update_time = omp_get_wtime()-tt2;
          }
+
          // log vector into grid of vectors
          for (long i=0; i<d; i++) {
             x_new[i+ThreadID*d] = x[i];
          }
+
          // each thread does s*(5d+1) flops
       }  // end of sweep through s data points
-      
-      // double update_time = omp_get_wtime()-tt2;
-      
+            
       //update x
-      // printf("update time = %f\n", omp_get_wtime()-tt);
       #pragma omp parallel for schedule(static)
       for (long i = 0; i < d; i++) {
          x[i] = 0;
@@ -135,16 +109,21 @@ void SGD_s( long n,              // number of columns of A
          }
          x[i] = x[i]/num_of_threads; //d flops
       }
-      // printf("average time = %f\n", omp_get_wtime()-tt);
 
+      // calc residual
       residual(n, d, A, x, b, r, Ax);  // Compute residual r = Ax - b //2*d*n+n flops
       double res = norm(r, n);
+
+      // print residual
       printf("%f, %f , %f, %f\n", res, omp_get_wtime()-tt, update_time, (double((5*d+1)*s*num_of_threads))/(update_time*1e9));
+
+      // check if below tolerance
       if (res < tol){
          break;
       }
    }  // end of SG
 
+   // free variables
    free(x_new);
    free(gradi);
    free(grad);
