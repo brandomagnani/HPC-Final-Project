@@ -42,17 +42,20 @@ int main(int argc, char *argv[])
         A[i] = SN(RG);
     }
 
+    for (long j = 0; j < d; j++)
+        A[j+j*d] += d*(SU(RG)-0.5);
+    
+
     // create x* solution
     for (long i=0; i<d; i++) {
        x[i] = SN(RG)+10*SU(RG);
     }   
 
     // create b
-    Matvec0(d, n, A, x, b); //b = Ax
+    Matvec0(n, d, A, x, b); //b = Ax
     for (long i=0; i<n; i++) {
        b[i] += SN(RG); // add noise
     }
-
     // set starting x
     for (long i=0; i<d; i++) {
        // x[i] += SU(RG);   // random varible
@@ -61,15 +64,15 @@ int main(int argc, char *argv[])
     }
 
     // Run gradient descent
-    //  transpose(n, d, A, At);                              // create transposed matrix for gradient descent
-    //  gradientDescent(n, d, A, At, x, b, r, eta, T, sf);   //run gradient descent
+    transpose(n, d, A, At);                              // create transposed matrix for gradient descent
+    gradientDescent(n, d, A, At, x, b, r, eta, T, sf);   //run gradient descent
 
     // reset x
-    //  for (long i=0; i<d; i++) 
-    //     x[i] = x_store[i];
+     for (long i=0; i<d; i++) 
+        x[i] = x_store[i];
 
     //run stochastic gradient descent
-    SGD_s(n, d, T, eta*double(n/s), A, x, b, r, 2, s, sf); //run stochastic gradient descent
+    SGD_s(n, d, T, eta*double(n/s), A, x, b, r, num_of_threads, s, sf); //run stochastic gradient descent
 
     // Free memory
     free(A);
