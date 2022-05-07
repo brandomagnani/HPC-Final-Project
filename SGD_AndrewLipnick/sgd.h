@@ -67,7 +67,7 @@ void SGD(long n,              // number of columns of A
          double *b,           // vector of size (n x 1)
          double *r,           // for residual (Ab - x), vector of size (n x 1)
          // vector<long> &I,      // vector of size n, contains indices for reshuffling
-        // mt19937 RG,          // Marsenne Twister random number generator
+         mt19937 RG,          // Marsenne Twister random number generator
          int num_of_threads, double sf) {
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
@@ -91,9 +91,6 @@ void SGD(long n,              // number of columns of A
 
        #pragma omp parallel num_threads(num_of_threads) firstprivate(I,x,gradi) shared(n,d,A,x_new,b)
          {
-         unsigned seed = 17U;     // seed for the random number generator -- 17 is the most random number?
-         mt19937 RG(seed);        // Mersenne twister random number generator
-
          // get thread number
          int ThreadID = omp_get_thread_num();
          //set x_temp to current x
