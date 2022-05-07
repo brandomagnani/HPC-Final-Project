@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
    long n     = 1000000;      // Number of rows in A
    long d     = 1000;         // Number of cols in A
    int s      = d;     //mini batch size
-   double sf  = 0.1;          //stopping factor
+   double sf  = 0.5;          //stopping factor
 
    long T     = 100;       // Number of iterations of stochastic gradient descent
    double eta = 1.0/double (n*d);       // Learning rate
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     // for (long i=0; i<d; i++) //reset x
     //    x[i] = x_store[i];
 
-    SGD_s(n, d, T, eta*double(n/s), A, x, b, r, RG, num_of_threads, s, sf); //run stochastic gradient descent
+    SGD_s(n, d, T, eta*double(n/s), A, x, b, r, num_of_threads, s, sf); //run stochastic gradient descent
     
     for (long i=0; i<d; i++) //reset x
          x[i] = x_store[i];
