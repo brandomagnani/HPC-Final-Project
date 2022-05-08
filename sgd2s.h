@@ -1,5 +1,5 @@
-#ifndef GRADIENT_DESCENTS2_H
-#define GRADIENT_DESCENTS2_H
+#ifndef GRADIENT_DESCENTS2_s_H
+#define GRADIENT_DESCENTS2_s_H
 
 
 #include <stdio.h>
@@ -14,7 +14,7 @@
 using namespace std;
 
 // performs Stochastic Gradient Descent
-void SGD2(long n,              // number of columns of A
+void SGD2_s(long n,              // number of columns of A
          long d,              // number of rows    of A
          long T,              // number of iterations for SGD
          double eta,          // learning rate
@@ -24,7 +24,9 @@ void SGD2(long n,              // number of columns of A
          double *r,           // for residual (Ab - x), vector of size (n x 1)
          // vector<long> &I,      // vector of size n, contains indices for reshuffling
          mt19937 RG,          // Marsenne Twister random number generator
-         int num_of_threads,double sf) {
+         int num_of_threads,  //thread count
+         int s,               // mini batch size
+         double sf) {         //reduction factor
    
    double* gradi   = (double*) malloc(d * sizeof(double));        // (d x 1) vector for grad(F_i(x))
    double* x_new   = (double*) malloc(num_of_threads * d * sizeof(double));        // (d x n) vector for x
@@ -58,7 +60,7 @@ void SGD2(long n,              // number of columns of A
 
          shuffle(I.begin(), I.end(), RG);   // first, reshuffle index vector
          
-         for (long k=0; k<n; k++){   // swipe through each data point
+         for (long k=0; k<s; k++){   // swipe through each data point
             
             long i = I[k];    // get randomly permuted intex
             gradFi(n, d, i, A, x_temp, b, gradi);  // compute gradient of F_i // 3d+1 flops
@@ -87,7 +89,7 @@ void SGD2(long n,              // number of columns of A
             }
          x[i] = x[i]/num_of_threads; //d flops
       }
-         
+
       // printf("average time = %f\n", omp_get_wtime()-tt);
       if (ThreadID == 0){
          residual(n, d, A, x, b, r);  // Compute residual r = Ax - b //2*d*n+n flops
@@ -105,6 +107,7 @@ void SGD2(long n,              // number of columns of A
 
    free(x_new);
    free(gradi);
+   free(x_temp);
 
 }
 
