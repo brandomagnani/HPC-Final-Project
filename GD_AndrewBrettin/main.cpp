@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     double* x = (double*) malloc(d * sizeof(double));
 
     for (long i=0; i<n*d; i++)
-        A[i] = drand48();
+        A[i] = drand48();;
     for (long i=0; i<n; i++)
         b[i] = drand48();
     for (long i=0; i<d; i++)

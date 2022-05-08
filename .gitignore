@@ -12,6 +12,7 @@ cpp.sbatch
 main
 a.out
 *.out
+output
 
 # Packages #
 ############
@@ -41,3 +42,7 @@ a.out
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Directories #
+###############
+output
